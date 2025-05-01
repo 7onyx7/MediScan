@@ -1,14 +1,41 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useUser } from '../contexts/UserContext';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { formatDate } from '../utils/helpers';
+import { Ionicons } from '@expo/vector-icons';
 
 const DiagnosesScreen: React.FC = () => {
   const navigation = useNavigation();
-  const { patient } = useUser();
+  const { patient, deleteDiagnosis } = useUser();
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = (id: string, name: string) => {
+    Alert.alert(
+      "Delete Diagnosis",
+      `Are you sure you want to delete "${name}"?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete", 
+          style: "destructive",
+          onPress: async () => {
+            setIsDeleting(true);
+            try {
+              await deleteDiagnosis(id);
+            } catch (error) {
+              console.error('Error deleting diagnosis:', error);
+              Alert.alert('Error', 'Failed to delete diagnosis');
+            } finally {
+              setIsDeleting(false);
+            }
+          }
+        }
+      ]
+    );
+  };
 
   if (!patient) {
     return (
@@ -38,7 +65,16 @@ const DiagnosesScreen: React.FC = () => {
         <View>
           {patient.diagnoses.map(diagnosis => (
             <Card key={diagnosis.id} style={styles.card}>
-              <Text style={styles.diagnosisName}>{diagnosis.name}</Text>
+              <View style={styles.diagnosisHeader}>
+                <Text style={styles.diagnosisName}>{diagnosis.name}</Text>
+                <TouchableOpacity 
+                  style={styles.deleteButton} 
+                  onPress={() => handleDelete(diagnosis.id, diagnosis.name)}
+                  disabled={isDeleting}
+                >
+                  <Ionicons name="trash-outline" size={20} color="#E53935" />
+                </TouchableOpacity>
+              </View>
               <View style={styles.infoRow}>
                 <Text style={styles.label}>Diagnosed On:</Text>
                 <Text style={styles.value}>{formatDate(diagnosis.diagnosedDate)}</Text>
@@ -117,6 +153,15 @@ const styles = StyleSheet.create({
   },
   card: {
     marginBottom: 12,
+  },
+  diagnosisHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  deleteButton: {
+    padding: 4,
   },
   diagnosisName: {
     fontSize: 18,

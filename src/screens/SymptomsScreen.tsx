@@ -1,13 +1,40 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useUser } from '../contexts/UserContext';
 import Button from '../components/Button';
 import Card from '../components/Card';
+import { Ionicons } from '@expo/vector-icons';
 
 const SymptomsScreen: React.FC = () => {
   const navigation = useNavigation();
-  const { patient } = useUser();
+  const { patient, deleteSymptom } = useUser();
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = (id: string, name: string) => {
+    Alert.alert(
+      "Delete Symptom",
+      `Are you sure you want to delete "${name}"?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete", 
+          style: "destructive",
+          onPress: async () => {
+            setIsDeleting(true);
+            try {
+              await deleteSymptom(id);
+            } catch (error) {
+              console.error('Error deleting symptom:', error);
+              Alert.alert('Error', 'Failed to delete symptom');
+            } finally {
+              setIsDeleting(false);
+            }
+          }
+        }
+      ]
+    );
+  };
 
   if (!patient) {
     return (
@@ -39,7 +66,16 @@ const SymptomsScreen: React.FC = () => {
             <Card key={symptom.id} style={styles.card}>
               <View style={styles.symptomHeader}>
                 <Text style={styles.symptomName}>{symptom.name}</Text>
-                <Text style={styles.symptomSeverity}>Severity: {symptom.severity}/10</Text>
+                <View style={styles.actionsContainer}>
+                  <Text style={styles.symptomSeverity}>Severity: {symptom.severity}/10</Text>
+                  <TouchableOpacity 
+                    style={styles.deleteButton} 
+                    onPress={() => handleDelete(symptom.id, symptom.name)}
+                    disabled={isDeleting}
+                  >
+                    <Ionicons name="trash-outline" size={20} color="#E53935" />
+                  </TouchableOpacity>
+                </View>
               </View>
               <Text style={styles.symptomDate}>Recorded: {symptom.dateRecorded}</Text>
               {symptom.notes && <Text style={styles.notes}>{symptom.notes}</Text>}
@@ -132,6 +168,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     marginTop: 8,
+  },
+  actionsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  deleteButton: {
+    marginLeft: 16,
+    padding: 4,
   },
 });
 
