@@ -1,8 +1,9 @@
 import axios from 'axios';
 import { MedicationInteraction } from '../types';
+import { FDA_API_KEY } from '@env';
 
 const BASE_URL = 'https://api.fda.gov/drug';
-const API_KEY = process.env.API_KEY || '';
+const API_KEY = FDA_API_KEY || '';
 
 interface DrugLabelResponse {
   results: Array<{

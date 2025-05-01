@@ -1,10 +1,15 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
-# dependencies
-node_modules/
+# Node modules
+node_modules
+*/node_modules
+**/node_modules
+PatientSafetyApp/node_modules
 
 # Expo
+.expo
 .expo/
+.expo-shared/
 dist/
 web-build/
 expo-env.d.ts
@@ -24,6 +29,7 @@ expo-env.d.ts
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+*.log
 
 # macOS
 .DS_Store
@@ -31,7 +37,7 @@ yarn-error.*
 
 # local env files
 .env
-.env.local
+.env*.local
 .env.development.local
 .env.test.local
 .env.production.local
@@ -39,31 +45,26 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-# jest
-coverage/
+# Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
 
-# logs
-logs
-*.log
-
-# editor directories and files
-.idea/
-.vscode/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# android build
+# Android/iOS specific
 android/app/build/
 android/build/
-android/gradle/
-android/app/src/
-
-# ios build
 ios/build/
 ios/Pods/
+
+# Editor directories and files
+.idea/
+.vscode/
+*.swp
+*.swo
 
 # build
 build/
@@ -71,3 +72,36 @@ build/
 # bundle
 *.bundle
 *.bundle.map
+
+# Expo specific files
+.expo-shared/
+.expo-cache/
+.expo-settings.json
+
+# Generated files
+.generated/
+
+# Temporary files
+.tmp/
+tmp/
+temp/
+
+# Cache
+.cache/
+.eslintcache
+.babel-cache/
+
+# Submodule changes
+PatientSafetyApp
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# React Native specific
+*.hprof
+*.ipa
+*.apk
+
