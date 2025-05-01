@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { usePatient } from '../contexts/PatientContext';
+import { useUser } from '../contexts/UserContext';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import Card from '../components/Card';
 
 const AddDiagnosisScreen: React.FC = () => {
   const navigation = useNavigation();
-  const { patient, addDiagnosis } = usePatient();
+  const { patient, addDiagnosis } = useUser();
 
   const [name, setName] = useState('');
   const [diagnosedDate, setDiagnosedDate] = useState('');
@@ -149,4 +149,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddDiagnosisScreen; 
+export default AddDiagnosisScreen;

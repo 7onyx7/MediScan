@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Slider } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { usePatient } from '../contexts/PatientContext';
+import Slider from '@react-native-community/slider';
+import { useUser } from '../contexts/UserContext';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import Card from '../components/Card';
 
 const AddSymptomScreen: React.FC = () => {
   const navigation = useNavigation();
-  const { patient, addSymptom } = usePatient();
+  const { patient, addSymptom } = useUser();
 
   const [name, setName] = useState('');
   const [severity, setSeverity] = useState(5);
@@ -165,4 +166,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddSymptomScreen; 
+export default AddSymptomScreen;

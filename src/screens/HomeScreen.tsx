@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
-import { usePatient } from '../contexts/PatientContext';
+import { useUser } from '../contexts/UserContext';
 import Card from '../components/Card';
 import Button from '../components/Button';
 
@@ -11,7 +11,7 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'H
 
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
-  const { patient, loading } = usePatient();
+  const { patient, loading } = useUser();
 
   if (loading) {
     return (
@@ -24,7 +24,7 @@ const HomeScreen: React.FC = () => {
   if (!patient) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.title}>Welcome to Patient Safety App</Text>
+        <Text style={styles.title}>Welcome to MediScan</Text>
         <Text style={styles.subtitle}>Keep track of your medications and health information securely.</Text>
         <Button
           title="Set Up Profile"
@@ -265,4 +265,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HomeScreen; 
+export default HomeScreen;

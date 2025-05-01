@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, ViewStyle, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { usePatient } from '../contexts/PatientContext';
+import { useUser } from '../contexts/UserContext';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { checkMedicationInteractions } from '../services/FdaService';
@@ -10,7 +10,7 @@ import { MedicationInteraction } from '../types';
 
 const AnalysisScreen: React.FC = () => {
   const navigation = useNavigation();
-  const { patient } = usePatient();
+  const { patient } = useUser();
   const [interactions, setInteractions] = useState<MedicationInteraction[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

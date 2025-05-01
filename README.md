@@ -1,7 +1,7 @@
-# PatientSafetyApp Project Documentation
+# MediScan Project Documentation
 
 ## Overview
-PatientSafetyApp is a mobile application focused on medication tracking, medical history management, and patient education. The app helps users track medications, record symptoms, log diagnoses, and maintain medical history while checking for potential medication safety issues through the FDA's drug database.
+MediScan is a mobile application focused on medication tracking, medical history management, and patient education. The app helps users track medications, record symptoms, log diagnoses, and maintain medical history while checking for potential medication safety issues through the FDA's drug database.
 
 ## Key Features
 - Medication tracking with FDA safety checks
@@ -85,7 +85,7 @@ PatientSafetyApp is a mobile application focused on medication tracking, medical
 
 ## Project Structure
 ```
-PatientSafetyApp/
+MediScan/
 ├── App.tsx                # Main application entry point
 ├── src/                   # Source code directory
 │   ├── components/        # Reusable UI components
@@ -104,4 +104,4 @@ PatientSafetyApp/
 ```
 
 ## Privacy and Security
-The application prioritizes user privacy by storing all sensitive data locally on the device using secure storage mechanisms. No personal health information is transmitted to external servers except when checking medication safety through the FDA API. 
+The application prioritizes user privacy by storing all sensitive data locally on the device using secure storage mechanisms. No personal health information is transmitted to external servers except when checking medication safety through the FDA API.

@@ -1,18 +1,14 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../types';
-import { usePatient } from '../contexts/PatientContext';
 import Button from '../components/Button';
 import Card from '../components/Card';
-import { formatDate } from '../utils/helpers';
-
-type MedicationsScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Medications'>;
+import { useUser } from '../contexts/UserContext';
+import { Medication } from '../types';
 
 const MedicationsScreen: React.FC = () => {
-  const navigation = useNavigation<MedicationsScreenNavigationProp>();
-  const { patient, loading, deleteMedication } = usePatient();
+  const navigation = useNavigation();
+  const { patient, deleteMedication, loading } = useUser();
 
   const handleDeleteMedication = async (id: string) => {
     try {
@@ -225,4 +221,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MedicationsScreen; 
+export default MedicationsScreen;

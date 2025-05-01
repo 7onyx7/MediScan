@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { usePatient } from '../contexts/PatientContext';
+import { useUser } from '../contexts/UserContext';
 import { MedicalHistory } from '../types';
 import Input from '../components/Input';
 import Button from '../components/Button';
@@ -9,7 +9,7 @@ import Card from '../components/Card';
 
 const AddMedicalHistoryScreen: React.FC = () => {
   const navigation = useNavigation();
-  const { patient, addMedicalHistory } = usePatient();
+  const { patient, addMedicalHistory } = useUser();
 
   const [name, setName] = useState('');
   const [type, setType] = useState<MedicalHistory['type']>('other');
@@ -205,4 +205,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddMedicalHistoryScreen; 
+export default AddMedicalHistoryScreen;

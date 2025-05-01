@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Patient, Medication, Symptom, Diagnosis, MedicalHistory } from '../types';
 import { generateId } from '../utils/helpers';
 
-interface PatientContextType {
+interface UserContextType {
   patient: Patient | null;
   loading: boolean;
   error: string | null;
@@ -25,9 +25,9 @@ interface PatientContextType {
   deleteAllergy: (allergy: string) => Promise<void>;
 }
 
-const PatientContext = createContext<PatientContextType | undefined>(undefined);
+const UserContext = createContext<UserContextType | undefined>(undefined);
 
-export const PatientProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [patient, setPatient] = useState<Patient | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -178,7 +178,7 @@ export const PatientProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   return (
-    <PatientContext.Provider
+    <UserContext.Provider
       value={{
         patient,
         loading,
@@ -202,14 +202,14 @@ export const PatientProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }}
     >
       {children}
-    </PatientContext.Provider>
+    </UserContext.Provider>
   );
 };
 
-export const usePatient = (): PatientContextType => {
-  const context = useContext(PatientContext);
+export const useUser = (): UserContextType => {
+  const context = useContext(UserContext);
   if (context === undefined) {
-    throw new Error('usePatient must be used within a PatientProvider');
+    throw new Error('useUser must be used within a UserProvider');
   }
   return context;
-}; 
+};

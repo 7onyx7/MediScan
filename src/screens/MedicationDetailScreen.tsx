@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../types';
-import { usePatient } from '../contexts/PatientContext';
+import { useUser } from '../contexts/UserContext';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import { formatDate } from '../utils/helpers';
@@ -13,7 +13,7 @@ type MedicationDetailRouteProp = RouteProp<RootStackParamList, 'MedicationDetail
 const MedicationDetailScreen: React.FC = () => {
   const route = useRoute<MedicationDetailRouteProp>();
   const navigation = useNavigation();
-  const { patient } = usePatient();
+  const { patient } = useUser();
   const { medicationId } = route.params;
   const [loading, setLoading] = useState(false);
   const [details, setDetails] = useState<any>(null);
@@ -232,4 +232,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MedicationDetailScreen; 
+export default MedicationDetailScreen;

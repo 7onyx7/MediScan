@@ -37,7 +37,7 @@ const Navigation = () => {
         <Stack.Screen
           name="Home"
           component={HomeScreen}
-          options={{ title: 'Patient Safety App' }}
+          options={{ title: 'MediScan' }}
         />
         <Stack.Screen
           name="Profile"

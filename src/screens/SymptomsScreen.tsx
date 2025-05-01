@@ -1,13 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { usePatient } from '../contexts/PatientContext';
+import { useUser } from '../contexts/UserContext';
 import Button from '../components/Button';
 import Card from '../components/Card';
 
 const SymptomsScreen: React.FC = () => {
   const navigation = useNavigation();
-  const { patient } = usePatient();
+  const { patient } = useUser();
 
   if (!patient) {
     return (
@@ -135,4 +135,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SymptomsScreen; 
+export default SymptomsScreen;

@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { usePatient } from '../contexts/PatientContext';
+import { useUser } from '../contexts/UserContext';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import Card from '../components/Card';
 
 const ProfileScreen: React.FC = () => {
   const navigation = useNavigation();
-  const { patient, initializePatient, updatePatient, loading } = usePatient();
+  const { patient, initializePatient, updatePatient, loading } = useUser();
 
   const [name, setName] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
@@ -236,4 +236,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ProfileScreen; 
+export default ProfileScreen;
