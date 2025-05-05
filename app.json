@@ -13,16 +13,30 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.anonymous.MediScan",
+      "runtimeVersion": "1.0.0"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "adc3ec2b-7159-4913-8a01-244ac3b96140"
+      }
+    },
+    "owner": "7onyx7",
+    "updates": {
+      "url": "https://u.expo.dev/adc3ec2b-7159-4913-8a01-244ac3b96140"
     }
   }
 }

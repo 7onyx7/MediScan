@@ -1,16 +1,15 @@
 export interface Medication {
-  id: string;
+  id?: string;
   name: string;
-  dosage: string;
-  frequency: string;
-  startDate: string;
-  endDate?: string;
+  dosage?: string;
+  frequency?: string;
+  datePrescribed: string;
   prescribedBy?: string;
   notes?: string;
 }
 
 export interface Symptom {
-  id: string;
+  id?: string;
   name: string;
   severity: number; // 1-10
   dateRecorded: string;
@@ -18,10 +17,10 @@ export interface Symptom {
 }
 
 export interface Diagnosis {
-  id: string;
+  id?: string;
   name: string;
   diagnosedDate: string;
-  diagnosedBy: string;
+  diagnosedBy?: string;
   notes?: string;
 }
 
@@ -56,12 +55,21 @@ export interface MedicationInteraction {
   source?: string; // The source of the interaction data
 }
 
+export interface MedicationAnalysisResult {
+  name: string;
+  dosage: string;
+  frequency: string;
+  possibleDiagnoses: string[];
+  possibleSymptoms: string[];
+}
+
 export type RootStackParamList = {
   Home: undefined;
   Profile: undefined;
   Medications: undefined;
   AddMedication: undefined;
   MedicationDetail: { medicationId: string };
+  MedicationScan: undefined;
   Symptoms: undefined;
   AddSymptom: undefined;
   Diagnoses: undefined;
@@ -69,4 +77,4 @@ export type RootStackParamList = {
   MedicalHistory: undefined;
   AddMedicalHistory: undefined;
   Analysis: undefined;
-}; 
+};

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -6,12 +6,20 @@ import { RootStackParamList } from '../types';
 import { useUser } from '../contexts/UserContext';
 import Card from '../components/Card';
 import Button from '../components/Button';
+import { Ionicons } from '@expo/vector-icons';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const { patient, loading } = useUser();
+
+  useEffect(() => {
+    // If no patient profile exists, prompt user to create one
+    if (!loading && !patient) {
+      navigation.navigate('Profile' as never);
+    }
+  }, [loading, patient, navigation]);
 
   if (loading) {
     return (
@@ -138,6 +146,33 @@ const HomeScreen: React.FC = () => {
           </View>
         )}
       </Card>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Quick Actions</Text>
+
+        <View style={styles.actionButtonsContainer}>
+          <Button
+            title="Scan Medication"
+            onPress={() => navigation.navigate('MedicationScan' as never)}
+            style={styles.actionButton}
+            icon={<Ionicons name="camera" size={20} color="white" style={styles.buttonIcon} />}
+          />
+
+          <Button
+            title="Add Medication"
+            onPress={() => navigation.navigate('AddMedication' as never)}
+            style={styles.actionButton}
+            icon={<Ionicons name="add-circle" size={20} color="white" style={styles.buttonIcon} />}
+          />
+
+          <Button
+            title="Record Symptom"
+            onPress={() => navigation.navigate('AddSymptom' as never)}
+            style={styles.actionButton}
+            icon={<Ionicons name="pulse" size={20} color="white" style={styles.buttonIcon} />}
+          />
+        </View>
+      </View>
     </ScrollView>
   );
 };
@@ -262,6 +297,28 @@ const styles = StyleSheet.create({
   },
   addButton: {
     minWidth: 150,
+  },
+  section: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    color: '#333',
+  },
+  actionButtonsContainer: {
+    flexDirection: 'column',
+    gap: 10,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  buttonIcon: {
+    marginRight: 8,
   },
 });
 

@@ -1,126 +1,52 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { RootStackParamList } from '../types';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useUser } from '../contexts/UserContext';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import Card from '../components/Card';
-import { searchMedication } from '../services/FdaService';
-
-type AddMedicationScreenRouteProp = RouteProp<RootStackParamList, 'AddMedication'>;
 
 const AddMedicationScreen: React.FC = () => {
   const navigation = useNavigation();
-  const route = useRoute<AddMedicationScreenRouteProp>();
-  const { patient, addMedication, updateMedication } = useUser();
-
-  const medicationId = (route.params as any)?.medicationId;
-  const existingMedication = patient?.medications.find(med => med.id === medicationId);
-  const isEditing = !!existingMedication;
+  const { patient, addMedication } = useUser();
 
   const [name, setName] = useState('');
   const [dosage, setDosage] = useState('');
   const [frequency, setFrequency] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
   const [prescribedBy, setPrescribedBy] = useState('');
   const [notes, setNotes] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [searching, setSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-
-  useEffect(() => {
-    if (existingMedication) {
-      setName(existingMedication.name);
-      setDosage(existingMedication.dosage);
-      setFrequency(existingMedication.frequency);
-      setStartDate(existingMedication.startDate);
-      setEndDate(existingMedication.endDate || '');
-      setPrescribedBy(existingMedication.prescribedBy || '');
-      setNotes(existingMedication.notes || '');
-    }
-  }, [existingMedication]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-
+    
+    // Only medication name is required in test mode
     if (!name.trim()) {
       newErrors.name = 'Medication name is required';
-    }
-
-    if (!dosage.trim()) {
-      newErrors.dosage = 'Dosage is required';
-    }
-
-    if (!frequency.trim()) {
-      newErrors.frequency = 'Frequency is required';
-    }
-
-    if (!startDate.trim()) {
-      newErrors.startDate = 'Start date is required';
-    } else {
-      // Basic date validation (MM/DD/YYYY)
-      const dateRegex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
-      if (!dateRegex.test(startDate)) {
-        newErrors.startDate = 'Please use MM/DD/YYYY format';
-      }
-    }
-
-    if (endDate.trim()) {
-      const dateRegex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
-      if (!dateRegex.test(endDate)) {
-        newErrors.endDate = 'Please use MM/DD/YYYY format';
-      }
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSearchMedication = async () => {
-    if (!name.trim()) return;
-
-    try {
-      setSearching(true);
-      const results = await searchMedication(name);
-      setSearchResults(results);
-    } catch (error) {
-      console.error('Error searching medication:', error);
-    } finally {
-      setSearching(false);
-    }
-  };
-
-  const handleSelectMedication = (result: any) => {
-    const brandName = result.openfda.brand_name ? result.openfda.brand_name[0] : '';
-    const genericName = result.openfda.generic_name ? result.openfda.generic_name[0] : '';
-    setName(brandName || genericName);
-    setSearchResults([]);
-  };
-
   const handleSave = async () => {
     if (!validateForm()) return;
 
-    try {
-      const medicationData = {
-        name,
-        dosage,
-        frequency,
-        startDate,
-        endDate: endDate || undefined,
-        prescribedBy: prescribedBy || undefined,
-        notes: notes || undefined,
-      };
+    const today = new Date();
+    const dateString = `${today.getMonth() + 1}/${today.getDate()}/${today.getFullYear()}`;
 
-      if (isEditing && medicationId) {
-        await updateMedication(medicationId, medicationData);
-      } else {
-        await addMedication(medicationData);
-      }
+    try {
+      await addMedication({
+        name,
+        dosage: dosage.trim() || undefined,
+        frequency: frequency.trim() || undefined,
+        datePrescribed: dateString,
+        prescribedBy: prescribedBy.trim() || 'Test Doctor',
+        notes: notes.trim() || undefined,
+      });
       navigation.goBack();
     } catch (error) {
-      console.error('Error saving medication:', error);
+      console.error('Error adding medication:', error);
     }
   };
 
@@ -140,74 +66,29 @@ const AddMedicationScreen: React.FC = () => {
   return (
     <ScrollView style={styles.container}>
       <Card>
-        <Text style={styles.title}>{isEditing ? 'Edit Medication' : 'Add Medication'}</Text>
-
-        <View style={styles.searchContainer}>
-          <Input
-            label="Medication Name"
-            value={name}
-            onChangeText={setName}
-            placeholder="Enter medication name"
-            error={errors.name}
-            style={styles.searchInput}
-          />
-          <Button
-            title="Search"
-            onPress={handleSearchMedication}
-            style={styles.searchButton}
-            loading={searching}
-          />
-        </View>
-
-        {searchResults.length > 0 && (
-          <Card style={styles.resultsCard}>
-            <Text style={styles.resultsTitle}>Search Results</Text>
-            {searchResults.map((result, index) => {
-              const brandName = result.openfda.brand_name ? result.openfda.brand_name[0] : '';
-              const genericName = result.openfda.generic_name ? result.openfda.generic_name[0] : '';
-              return (
-                <Button
-                  key={index}
-                  title={brandName || genericName}
-                  onPress={() => handleSelectMedication(result)}
-                  type="secondary"
-                  style={styles.resultButton}
-                />
-              );
-            })}
-          </Card>
-        )}
+        <Text style={styles.title}>Add Medication</Text>
+        <Text style={styles.subtitle}>(Test Mode - Only Name is Required)</Text>
+        
+        <Input
+          label="Medication Name *"
+          value={name}
+          onChangeText={setName}
+          placeholder="E.g., Advil, Tylenol, etc."
+          error={errors.name}
+        />
 
         <Input
-          label="Dosage"
+          label="Dosage (Optional)"
           value={dosage}
           onChangeText={setDosage}
-          placeholder="e.g., 10mg"
-          error={errors.dosage}
+          placeholder="E.g., 200mg, 1 tablet, etc."
         />
 
         <Input
-          label="Frequency"
+          label="Frequency (Optional)"
           value={frequency}
           onChangeText={setFrequency}
-          placeholder="e.g., Twice daily"
-          error={errors.frequency}
-        />
-
-        <Input
-          label="Start Date"
-          value={startDate}
-          onChangeText={setStartDate}
-          placeholder="MM/DD/YYYY"
-          error={errors.startDate}
-        />
-
-        <Input
-          label="End Date (Optional)"
-          value={endDate}
-          onChangeText={setEndDate}
-          placeholder="MM/DD/YYYY"
-          error={errors.endDate}
+          placeholder="E.g., Once daily, Twice a week, etc."
         />
 
         <Input
@@ -221,12 +102,12 @@ const AddMedicationScreen: React.FC = () => {
           label="Notes (Optional)"
           value={notes}
           onChangeText={setNotes}
-          placeholder="Additional notes"
+          placeholder="Any additional information"
           multiline
         />
 
         <Button
-          title={isEditing ? 'Update Medication' : 'Add Medication'}
+          title="Save Medication"
           onPress={handleSave}
           style={styles.saveButton}
         />
@@ -236,6 +117,7 @@ const AddMedicationScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  // ... existing styles ...
   container: {
     flex: 1,
     backgroundColor: '#F5F5F5',
@@ -250,8 +132,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 16,
+    marginBottom: 8,
     color: '#333',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 16,
   },
   message: {
     fontSize: 16,
@@ -264,31 +151,6 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     marginTop: 16,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-  },
-  searchInput: {
-    flex: 1,
-    marginRight: 8,
-  },
-  searchButton: {
-    minWidth: 80,
-    marginBottom: 16,
-  },
-  resultsCard: {
-    marginBottom: 16,
-    padding: 8,
-  },
-  resultsTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-    marginBottom: 8,
-    color: '#333',
-  },
-  resultButton: {
-    marginBottom: 8,
   },
 });
 

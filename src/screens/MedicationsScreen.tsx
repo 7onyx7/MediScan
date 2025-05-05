@@ -5,6 +5,7 @@ import Button from '../components/Button';
 import Card from '../components/Card';
 import { useUser } from '../contexts/UserContext';
 import { Medication } from '../types';
+import { formatDate } from '../utils/helpers';
 
 const MedicationsScreen: React.FC = () => {
   const navigation = useNavigation();

@@ -1,13 +1,9 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
 # Node modules
-node_modules
-*/node_modules
-**/node_modules
-PatientSafetyApp/node_modules
+node_modules/
 
 # Expo
-.expo
 .expo/
 .expo-shared/
 dist/
@@ -25,7 +21,7 @@ expo-env.d.ts
 # Metro
 .metro-health-check*
 
-# debug
+# Debug files
 npm-debug.*
 yarn-debug.*
 yarn-error.*
@@ -54,26 +50,40 @@ yarn-error.*
 !.yarn/versions
 .pnp.*
 
-# Android/iOS specific
-android/app/build/
-android/build/
-ios/build/
-ios/Pods/
+# Android - ignore entire directory
+android/
+
+# Specific Android files (redundant with android/ but added for clarity)
+android/app/proguard-rules.pro
+android/app/src/debug/AndroidManifest.xml
+android/app/src/main/AndroidManifest.xml
+android/build.gradle
+android/gradle.properties
+android/settings.gradle
+
+# iOS
+ios/
 
 # Editor directories and files
 .idea/
 .vscode/
 *.swp
 *.swo
+.project
+.classpath
+*.sublime*
+.history/
 
-# build
+# Build files
 build/
+/build
+**/build/
 
-# bundle
+# Bundle
 *.bundle
 *.bundle.map
 
-# Expo specific files
+# Expo files
 .expo-shared/
 .expo-cache/
 .expo-settings.json
@@ -91,17 +101,32 @@ temp/
 .eslintcache
 .babel-cache/
 
-# Submodule changes
-PatientSafetyApp
+# Logs and databases
+*.sql
+*.sqlite
+*.sqlite3
 
-# Fastlane
-fastlane/report.xml
-fastlane/Preview.html
-fastlane/screenshots
-fastlane/test_output
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
 
-# React Native specific
-*.hprof
-*.ipa
-*.apk
+# Windows specific
+$RECYCLE.BIN/
+
+# Coverage reports
+coverage/
+.coverage
+.nyc_output/
+
+# EAS
+.eas/
+eas.json.local
+
+# Misc
+**/*.jar
+**/.DS_Store
+**/__pycache__/
+**/.pytest_cache/
+**/.ipynb_checkpoints/
 

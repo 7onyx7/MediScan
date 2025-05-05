@@ -19,22 +19,9 @@ const AddDiagnosisScreen: React.FC = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
+    // Only diagnosis name is required in test mode
     if (!name.trim()) {
       newErrors.name = 'Diagnosis name is required';
-    }
-
-    if (!diagnosedDate.trim()) {
-      newErrors.diagnosedDate = 'Diagnosis date is required';
-    } else {
-      // Basic date validation (MM/DD/YYYY)
-      const dateRegex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
-      if (!dateRegex.test(diagnosedDate)) {
-        newErrors.diagnosedDate = 'Please use MM/DD/YYYY format';
-      }
-    }
-
-    if (!diagnosedBy.trim()) {
-      newErrors.diagnosedBy = 'Healthcare provider name is required';
     }
 
     setErrors(newErrors);
@@ -44,11 +31,16 @@ const AddDiagnosisScreen: React.FC = () => {
   const handleSave = async () => {
     if (!validateForm()) return;
 
+    // If no date provided, use today
+    const today = new Date();
+    const dateString = diagnosedDate.trim() || 
+      `${today.getMonth() + 1}/${today.getDate()}/${today.getFullYear()}`;
+
     try {
       await addDiagnosis({
         name,
-        diagnosedDate,
-        diagnosedBy,
+        diagnosedDate: dateString,
+        diagnosedBy: diagnosedBy.trim() || 'Test Doctor',
         notes: notes.trim() || undefined,
       });
       navigation.goBack();
@@ -74,36 +66,35 @@ const AddDiagnosisScreen: React.FC = () => {
     <ScrollView style={styles.container}>
       <Card>
         <Text style={styles.title}>Add Diagnosis</Text>
+        <Text style={styles.subtitle}>(Test Mode - Only Name is Required)</Text>
         
         <Input
-          label="Diagnosis"
+          label="Diagnosis Name *"
           value={name}
           onChangeText={setName}
-          placeholder="Enter diagnosis name"
+          placeholder="E.g., Diabetes, Hypertension, etc."
           error={errors.name}
         />
 
         <Input
-          label="Date Diagnosed"
+          label="Date Diagnosed (Optional)"
           value={diagnosedDate}
           onChangeText={setDiagnosedDate}
           placeholder="MM/DD/YYYY"
-          error={errors.diagnosedDate}
         />
 
         <Input
-          label="Diagnosed By"
+          label="Diagnosed By (Optional)"
           value={diagnosedBy}
           onChangeText={setDiagnosedBy}
-          placeholder="Enter healthcare provider's name"
-          error={errors.diagnosedBy}
+          placeholder="Doctor's name"
         />
 
         <Input
           label="Notes (Optional)"
           value={notes}
           onChangeText={setNotes}
-          placeholder="Additional information about the diagnosis"
+          placeholder="Any additional information"
           multiline
         />
 
@@ -132,8 +123,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 16,
+    marginBottom: 8,
     color: '#333',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 16,
   },
   message: {
     fontSize: 16,

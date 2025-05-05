@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, ViewStyle, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Alert, Switch } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useUser } from '../contexts/UserContext';
 import Button from '../components/Button';
@@ -21,49 +21,52 @@ const AnalysisScreen: React.FC = () => {
   const [geminiLoading, setGeminiLoading] = useState(false);
   const [geminiError, setGeminiError] = useState<string | null>(null);
 
+  // Test mode toggle
+  const [isTestMode, setIsTestMode] = useState(false);
+
   useEffect(() => {
-    if (patient) {
-      // Check FDA interactions if there are multiple medications
-      if (patient.medications.length > 1) {
-        checkInteractions();
-      }
-      
-      // Run Gemini analysis if there's any health data to analyze
-      if (patient.medications.length > 0 || patient.symptoms.length > 0 || patient.diagnoses.length > 0) {
-        runGeminiAnalysis();
-      }
-    }
+    // No automatic analysis on load - wait for user to request it
   }, [patient]);
 
   const checkInteractions = async () => {
-    // ... existing checkInteractions function ...
     if (!patient || patient.medications.length < 2) return;
 
     try {
       setLoading(true);
       setError(null);
+      
+      // Just use medication names for API call
       const medicationNames = patient.medications.map(med => med.name);
       
-      // Add a short delay to ensure state updates
-      setTimeout(async () => {
-        try {
-          const results = await checkMedicationInteractions(medicationNames);
-          setInteractions(results);
+      // If in test mode, use placeholder data
+      if (isTestMode) {
+        setTimeout(() => {
+          // Mock data for test mode
+          const placeholderData = getPlaceholderAnalysis();
+          setGeminiResults(placeholderData);
           setLoading(false);
-        } catch (err) {
-          console.error('Error checking interactions:', err);
-          setError('Could not check all medication interactions. Please ensure you have an internet connection and try again.');
-          setLoading(false);
-        }
-      }, 300);
+        }, 1000);
+        return;
+      }
+      
+      // Use actual API in real mode
+      try {
+        const results = await checkMedicationInteractions(medicationNames);
+        setInteractions(results);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error checking interactions:', err);
+        setError('Failed to check medication interactions. Try switching to Test Mode for demo data.');
+        setLoading(false);
+      }
     } catch (err) {
       console.error('Error initiating interaction check:', err);
-      setError('Failed to check medication interactions. Please check your internet connection and try again.');
+      setError('Failed to check medication interactions.');
       setLoading(false);
     }
   };
   
-  // New function to run Gemini analysis
+  // Analysis function that handles real or test mode
   const runGeminiAnalysis = async () => {
     if (!patient) return;
     
@@ -71,41 +74,33 @@ const AnalysisScreen: React.FC = () => {
       setGeminiLoading(true);
       setGeminiError(null);
       
-      const results = await analyzeHealthData(
-        patient.medications || [],
-        patient.symptoms || [],
-        patient.diagnoses || []
-      );
-      
-      setGeminiResults(results);
-      setGeminiLoading(false);
+      if (isTestMode) {
+        // Use placeholder data in test mode
+        setTimeout(() => {
+          const placeholderData = getPlaceholderAnalysis();
+          setGeminiResults(placeholderData);
+          setGeminiLoading(false);
+        }, 1000);
+      } else {
+        // Use real Gemini API in real mode
+        try {
+          const results = await analyzeHealthData(
+            patient.medications,
+            patient.symptoms,
+            patient.diagnoses
+          );
+          setGeminiResults(results);
+        } catch (err) {
+          console.error('Error running Gemini analysis:', err);
+          setGeminiError('Failed to analyze health data. Try switching to Test Mode for demo data.');
+        } finally {
+          setGeminiLoading(false);
+        }
+      }
     } catch (err) {
-      console.error('Error running Gemini analysis:', err);
-      
-      // Show a more helpful error message
-      Alert.alert(
-        'Analysis Error',
-        'Could not complete the health analysis. Would you like to see a sample analysis instead?',
-        [
-          {
-            text: 'Cancel',
-            style: 'cancel',
-            onPress: () => {
-              setGeminiError('Could not complete the comprehensive health analysis. Please try again later.');
-              setGeminiLoading(false);
-            }
-          },
-          {
-            text: 'Use Sample',
-            onPress: () => {
-              // Use placeholder data instead
-              const placeholderData = getPlaceholderAnalysis();
-              setGeminiResults(placeholderData);
-              setGeminiLoading(false);
-            }
-          }
-        ]
-      );
+      console.error('Error in analysis:', err);
+      setGeminiError('Failed to run analysis');
+      setGeminiLoading(false);
     }
   };
 
@@ -129,34 +124,30 @@ const AnalysisScreen: React.FC = () => {
     );
   }
 
-  // Show a message if there's no health data at all
-  if (patient.medications.length === 0 && patient.symptoms.length === 0 && patient.diagnoses.length === 0) {
-    return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.message}>You need to add some health information to see an analysis</Text>
-        <View style={styles.buttonRow}>
-          <Button
-            title="Add Medications"
-            onPress={() => navigation.navigate('Medications' as never)}
-            style={styles.button}
-          />
-          <Button
-            title="Add Symptoms"
-            onPress={() => navigation.navigate('Symptoms' as never)}
-            style={{...styles.button, ...styles.secondaryButton}}
-          />
-        </View>
-      </View>
-    );
-  }
-
   return (
     <ScrollView style={styles.container}>
+      {/* Mode Toggle */}
+      <View style={styles.modeToggleContainer}>
+        <Text style={styles.modeToggleLabel}>Test Mode</Text>
+        <Switch
+          trackColor={{ false: "#767577", true: "#81b0ff" }}
+          thumbColor={isTestMode ? "#2196F3" : "#f4f3f4"}
+          ios_backgroundColor="#3e3e3e"
+          onValueChange={() => setIsTestMode(previousState => !previousState)}
+          value={isTestMode}
+        />
+        <Text style={styles.modeDescription}>
+          {isTestMode ? "Using demo data" : "Using Gemini AI"}
+        </Text>
+      </View>
+
       {/* Comprehensive Health Analysis Card */}
       <Card style={styles.card}>
-        <Text style={styles.title}>Health Analysis</Text>
+        <Text style={styles.title}>
+          Health Analysis {isTestMode ? "(Test Mode)" : ""}
+        </Text>
         <Text style={styles.subtitle}>
-          A comprehensive analysis of your health information, including medications, symptoms, and diagnoses
+          Click the button below to analyze your health information
         </Text>
 
         {geminiLoading ? (
@@ -168,12 +159,13 @@ const AnalysisScreen: React.FC = () => {
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{geminiError}</Text>
             <Button
-              title="Try Again"
+              title={isTestMode ? "Try Test Analysis" : "Try Analysis"}
               onPress={runGeminiAnalysis}
               style={styles.retryButton}
             />
           </View>
         ) : geminiResults ? (
+          // ...existing gemini results display code...
           <View style={styles.resultsContainer}>
             {/* Overall Summary */}
             <View style={styles.summaryContainer}>
@@ -251,6 +243,7 @@ const AnalysisScreen: React.FC = () => {
           <View style={styles.centerContainer}>
             <Text style={styles.message}>
               Click below to analyze your health information
+              {isTestMode ? " (using test data)" : ""}
             </Text>
             <Button
               title="Run Health Analysis"
@@ -261,150 +254,143 @@ const AnalysisScreen: React.FC = () => {
         )}
       </Card>
 
-      {/* FDA Medication Interactions Card (only show if multiple medications) */}
-      {patient.medications.length > 1 && (
-        <Card>
-          <Text style={styles.title}>Medication Interactions</Text>
-          <Text style={styles.subtitle}>
-            This analysis helps you understand potential concerns when taking multiple medications together
-          </Text>
+      {/* FDA Medication Interactions Card */}
+      <Card>
+        <Text style={styles.title}>
+          Medication Interactions {isTestMode ? "(Test Mode)" : ""}
+        </Text>
+        <Text style={styles.subtitle}>
+          Click below to see potential interactions between medications
+        </Text>
 
-          {loading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#2196F3" />
-              <Text style={styles.loadingText}>Analyzing your medications...</Text>
-            </View>
-          ) : error ? (
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{error}</Text>
-              <Text style={styles.errorHelpText}>
-                This may happen due to connection issues with the FDA database or if the medications cannot be found in the database.
-              </Text>
-              {interactions.length > 0 && (
-                <Text style={styles.partialResultsText}>
-                  Showing {interactions.length} interaction(s) that could be verified.
-                </Text>
-              )}
-              <Button
-                title="Try Again"
-                onPress={checkInteractions}
-                style={styles.retryButton}
-              />
-            </View>
-          ) : (
-            <View style={styles.resultsContainer}>
-              <Text style={styles.sectionTitle}>
-                {interactions.length > 0
-                  ? 'Potential Interactions Found'
-                  : 'No Interactions Found'}
-              </Text>
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#2196F3" />
+            <Text style={styles.loadingText}>Analyzing your medications...</Text>
+          </View>
+        ) : error ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+            <Button
+              title={isTestMode ? "Try Test Analysis" : "Try Analysis"}
+              onPress={checkInteractions}
+              style={styles.retryButton}
+            />
+          </View>
+        ) : interactions.length > 0 ? (
+          // ...existing interactions display code...
+          <View style={styles.resultsContainer}>
+            <Text style={styles.sectionTitle}>
+              Potential Interactions Found
+            </Text>
 
-              {interactions.length > 0 ? (
-                interactions.map((interaction, index) => (
-                  <Card key={index} style={styles.interactionCard}>
-                    <View style={styles.interactionHeader}>
-                      <Text style={styles.interactionTitle}>
-                        {interaction.drug1} + {interaction.drug2}
-                      </Text>
-                      <View style={{
-                        ...styles.severityBadge,
-                        ...(interaction.severity === 'minor' ? styles.minorBadge :
-                          interaction.severity === 'moderate' ? styles.moderateBadge :
-                          styles.majorBadge)
-                      }}>
-                        <Text style={styles.severityText}>
-                          {interaction.severity.toUpperCase()}
-                        </Text>
-                      </View>
-                    </View>
-
-                    {/* Simple explanation for laypeople */}
-                    <Text style={styles.simplifiedExplanation}>
-                      {interaction.simplifiedExplanation}
+            {interactions.map((interaction, index) => (
+              <Card key={index} style={styles.interactionCard}>
+                <View style={styles.interactionHeader}>
+                  <Text style={styles.interactionTitle}>
+                    {interaction.drug1} + {interaction.drug2}
+                  </Text>
+                  <View style={{
+                    ...styles.severityBadge,
+                    ...(interaction.severity === 'minor' ? styles.minorBadge :
+                      interaction.severity === 'moderate' ? styles.moderateBadge :
+                      styles.majorBadge)
+                  }}>
+                    <Text style={styles.severityText}>
+                      {interaction.severity.toUpperCase()}
                     </Text>
+                  </View>
+                </View>
 
-                    {/* Added FDA source information */}
-                    {interaction.source && (
-                      <Text style={styles.sourceText}>{interaction.source}</Text>
-                    )}
-
-                    {/* Possible effects section */}
-                    <View style={styles.sectionContainer}>
-                      <Text style={styles.sectionSubtitle}>FDA Information on Potential Effects:</Text>
-                      {interaction.possibleEffects.map((effect, idx) => (
-                        <View key={idx} style={styles.bulletPoint}>
-                          <Text style={styles.bulletDot}>•</Text>
-                          <Text style={styles.bulletText}>{effect}</Text>
-                        </View>
-                      ))}
-                    </View>
-
-                    {/* Recommendations section */}
-                    <View style={styles.sectionContainer}>
-                      <Text style={styles.sectionSubtitle}>FDA Recommendations:</Text>
-                      {interaction.recommendations.map((recommendation, idx) => (
-                        <View key={idx} style={styles.bulletPoint}>
-                          <Text style={styles.bulletDot}>•</Text>
-                          <Text style={styles.bulletText}>{recommendation}</Text>
-                        </View>
-                      ))}
-                    </View>
-
-                    {/* Technical details that toggle on/off */}
-                    <TouchableOpacity 
-                      style={styles.toggleButton}
-                      onPress={() => toggleTechnicalDetails(index)}
-                    >
-                      <Text style={styles.toggleButtonText}>
-                        {expandedDetails[index] ? 'Hide Technical Details' : 'Show Technical Details'}
-                      </Text>
-                    </TouchableOpacity>
-
-                    {expandedDetails[index] && (
-                      <View style={styles.technicalDetails}>
-                        <Text style={styles.technicalTitle}>Technical Description:</Text>
-                        <Text style={styles.technicalText}>{interaction.description}</Text>
-                      </View>
-                    )}
-                  </Card>
-                ))
-              ) : (
-                <Text style={styles.noInteractionsText}>
-                  Good news! No potential interactions were found between your current medications.
-                  However, always consult with your healthcare provider before making any changes to
-                  your medication regimen.
+                {/* Simple explanation for laypeople */}
+                <Text style={styles.simplifiedExplanation}>
+                  {interaction.simplifiedExplanation}
                 </Text>
-              )}
 
-              {patient.medications.length > 0 && (
-                <View style={styles.medicationsSection}>
-                  <Text style={styles.sectionTitle}>Your Medications</Text>
-                  {patient.medications.map((medication, index) => (
-                    <View key={index} style={styles.medicationItem}>
-                      <Text style={styles.medicationName}>{medication.name}</Text>
-                      <Text style={styles.medicationDosage}>{medication.dosage}</Text>
+                {/* Added FDA source information */}
+                {interaction.source && (
+                  <Text style={styles.sourceText}>{interaction.source}</Text>
+                )}
+
+                {/* Possible effects section */}
+                <View style={styles.sectionContainer}>
+                  <Text style={styles.sectionSubtitle}>FDA Information on Potential Effects:</Text>
+                  {interaction.possibleEffects.map((effect, idx) => (
+                    <View key={idx} style={styles.bulletPoint}>
+                      <Text style={styles.bulletDot}>•</Text>
+                      <Text style={styles.bulletText}>{effect}</Text>
                     </View>
                   ))}
                 </View>
-              )}
 
-              <Button
-                title="Refresh FDA Analysis"
-                onPress={checkInteractions}
-                style={styles.refreshButton}
-              />
+                {/* Recommendations section */}
+                <View style={styles.sectionContainer}>
+                  <Text style={styles.sectionSubtitle}>FDA Recommendations:</Text>
+                  {interaction.recommendations.map((recommendation, idx) => (
+                    <View key={idx} style={styles.bulletPoint}>
+                      <Text style={styles.bulletDot}>•</Text>
+                      <Text style={styles.bulletText}>{recommendation}</Text>
+                    </View>
+                  ))}
+                </View>
+
+                {/* Technical details that toggle on/off */}
+                <TouchableOpacity 
+                  style={styles.toggleButton}
+                  onPress={() => toggleTechnicalDetails(index)}
+                >
+                  <Text style={styles.toggleButtonText}>
+                    {expandedDetails[index] ? 'Hide Technical Details' : 'Show Technical Details'}
+                  </Text>
+                </TouchableOpacity>
+
+                {expandedDetails[index] && (
+                  <View style={styles.technicalDetails}>
+                    <Text style={styles.technicalTitle}>Technical Description:</Text>
+                    <Text style={styles.technicalText}>{interaction.description}</Text>
+                  </View>
+                )}
+              </Card>
+            ))}
+
+            <View style={styles.medicationsSection}>
+              <Text style={styles.sectionTitle}>Your Medications</Text>
+              {patient.medications.map((medication, index) => (
+                <View key={index} style={styles.medicationItem}>
+                  <Text style={styles.medicationName}>{medication.name}</Text>
+                  <Text style={styles.medicationDosage}>{medication.dosage || 'No dosage specified'}</Text>
+                </View>
+              ))}
             </View>
-          )}
-        </Card>
-      )}
 
-      <View style={styles.disclaimer}>
-        <Text style={styles.disclaimerText}>
-          Disclaimer: This analysis is for informational purposes only and is not a substitute for
-          professional medical advice. Always consult with your healthcare provider about potential
-          drug interactions, symptoms, and diagnoses.
-        </Text>
-      </View>
+            <Button
+              title="Refresh FDA Analysis"
+              onPress={checkInteractions}
+              style={styles.refreshButton}
+            />
+          </View>
+        ) : (
+          <View style={styles.centerContainer}>
+            <Text style={styles.message}>
+              Click below to check medication interactions
+              {isTestMode ? " (using test data)" : ""}
+            </Text>
+            <Button
+              title="Check Interactions"
+              onPress={checkInteractions}
+              style={styles.button}
+            />
+          </View>
+        )}
+      </Card>
+
+      {isTestMode && (
+        <View style={styles.disclaimer}>
+          <Text style={styles.disclaimerText}>
+            Test Mode Disclaimer: This analysis shows sample data for demonstration purposes only and may not reflect actual health information.
+          </Text>
+        </View>
+      )}
     </ScrollView>
   );
 };
@@ -713,6 +699,30 @@ const styles = StyleSheet.create({
     color: '#4CAF50',
     textAlign: 'center',
   },
+  
+  modeToggleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    marginBottom: 12,
+    backgroundColor: '#f0f0f0',
+    padding: 8,
+    borderRadius: 8,
+  },
+  modeToggleLabel: {
+    marginRight: 8,
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#555',
+  },
+  modeDescription: {
+    marginLeft: 8,
+    fontSize: 12,
+    color: '#666',
+    fontStyle: 'italic',
+  },
+  
+  // ...existing styles...
 });
 
 export default AnalysisScreen;
